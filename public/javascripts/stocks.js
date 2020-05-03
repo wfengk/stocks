@@ -35,7 +35,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
             headerName: 'Key Statistics',
             children: [
                 { headerName: "P/E Ratio", field: "peRatio", filter: 'agNumberColumnFilter', width: 150, cellRenderer: peRatioCellRenderer}, 
-                { headerName: "PB (Price to Book)", field: "defaultKeyStatistics.bookValue.raw", filter: 'agNumberColumnFilter', width: 200}, 
+                { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: pbRatioCellRenderer}, 
             ]
         },
         {
@@ -96,11 +96,31 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     }
 
     /*
+        Highlights cells based on PB Ratio
+    */
+   function pbRatioCellRenderer (params) {
+
+    if (params.value == null) {
+        return String.Empty;
+    }      
+    var pbRatio = (params.value).toFixed(2);
+
+    if (pbRatio < 1) {
+        color = "green";
+    } else if (pbRatio >= 1 && pbRatio <= 3) {
+        color = "orange"; 
+    } else if (pbRatio > 3) {
+        color = "red";
+    } 
+
+    return '<span style="color: ' + color + '">' + pbRatio + '</span>';
+}
+
+    /*
         Highlights cells based on PE Ratio
     */
     function peRatioCellRenderer (params) {
-
-        var cellHtml = String.Empty;        
+     
         var peRatio = peRatioCalculation(params);
 
         if (peRatio == null) {

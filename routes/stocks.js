@@ -3,7 +3,7 @@ var router = express.Router();
 
 // Get all stocks
 router.get('/', function(req, res, next) {
-
+  console.log('Rendering route: stocks');
   const Stocks = require('../models/stock');
 
   Stocks.find({})
