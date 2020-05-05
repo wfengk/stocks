@@ -3,7 +3,7 @@ var router = express.Router();
 var bodyParser = require('body-parser');
 
 // Create application/json parser
-var jsonParser = bodyParser.json({limit: '50mb'});
+var jsonParser = bodyParser.json({extended: true});
 
 // Get all stocks
 router.get('/', function(req, res, next) {

@@ -3,15 +3,25 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+
+var envConfig = require('dotenv').config();
+if (envConfig.error) {
+  throw envConfig.error
+}
+
 var db = require('./models/db');
 var agGrid = require('ag-grid-community');
-
+ 
 // Load route handlers
 var indexRouter = require('./routes/index');
 var getStocksRouter = require('./routes/stocks');
 
 var app = express();
+
+// Set body-parser limit
+app.use(bodyParser({limit: '5mb'}));
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
