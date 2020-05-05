@@ -7,12 +7,13 @@ var mongoose = require('mongoose');
 var db = require('./models/db');
 var agGrid = require('ag-grid-community');
 
+// Load route handlers
 var indexRouter = require('./routes/index');
 var getStocksRouter = require('./routes/stocks');
 
 var app = express();
 
-// view engine setup
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -21,13 +22,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 // Register custom route masking node_modules
 app.use('/scripts', express.static(path.join(__dirname, 'node_modules')));
 
+// Register route handlers
 app.use('/', indexRouter);
 app.use('/api/stocks', getStocksRouter);
 
-// catch 404 and forward to error handler
+// Catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });

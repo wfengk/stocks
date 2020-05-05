@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 
+// TODO: Add app config (use dotenv)
 // MongoDB
 mongoose.connect(process.env.CUSTOMCONNSTR_DBConnectionString, { useNewUrlParser: true});
 // Connection success
