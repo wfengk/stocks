@@ -7,9 +7,6 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 var envConfig = require('dotenv').config();
-if (envConfig.error) {
-  throw envConfig.error
-}
 
 var db = require('./models/db');
 var agGrid = require('ag-grid-community');
