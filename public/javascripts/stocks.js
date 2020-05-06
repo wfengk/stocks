@@ -34,18 +34,19 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         {
             headerName: 'Key Statistics',
             children: [
-                { headerName: "P/E Ratio", field: "peRatio", filter: 'agNumberColumnFilter', width: 150, cellRenderer: peRatioCellRenderer}, 
-                { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: pbRatioCellRenderer}, 
+                { headerName: "P/E Ratio", filter: 'agNumberColumnFilter', width: 150, valueGetter: peRatioCalculation, cellRenderer: peRatioCellRenderer}, 
+                { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
+                { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer}
             ]
         },
         {
             headerName: 'Statistics',
             children: [
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Date", field: "_id", width: 150, filter: 'agDateColumnFilter', valueFormatter: mongoObjectIdDateFormatter}, //TODO: Date filter doesnt work
+                { headerName: "Date", field: "_id", width: 200, filter: 'agDateColumnFilter', valueFormatter: mongoObjectIdDateFormatter},
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Asset Type", field: "quoteType.quoteType", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Price", field: "price.regularMarketPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
+                { headerName: "Price", field: "financialData.currentPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
                 { headerName: "Trailing EPS", field: "defaultKeyStatistics.trailingEps.raw", filter: 'agNumberColumnFilter', width: 150},
                 { headerName: "Forward EPS", field: "defaultKeyStatistics.forwardEps.raw", filter: 'agNumberColumnFilter', width: 150}
             ]
@@ -79,20 +80,25 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         Convert MongoDB ObjectId to Date value
     */
     function mongoObjectIdDateFormatter(params) {
-        return (new Date(parseInt(params.value.slice(0,8), 16)*1000)).toDateString();
+        return new Date(parseInt(params.value.slice(0,8), 16)*1000);
     }
 
-    //TODO: Need to be able to filter this in the UI
+    /*
+        Calculate trailing PE
+    */
     function peRatioCalculation(params) {
 
-        if (!params.data.price.hasOwnProperty("regularMarketPrice") || !params.data.defaultKeyStatistics.hasOwnProperty("trailingEps")) {
+        if (!("financialData" in params.data) || !("defaultKeyStatistics" in params.data)) {
             return null;
         }
+        if (!("currentPrice" in params.data.financialData) || !("trailingEps" in params.data.defaultKeyStatistics)) {
+            return null
+        }
 
-        var stockPrice = Number(params.data.price.regularMarketPrice.raw);
+        var stockPrice = Number(params.data.financialData.currentPrice.raw);
         var trailingEps = Number(params.data.defaultKeyStatistics.trailingEps.raw);
 
-        return (stockPrice / trailingEps).toFixed(2);
+        return Number((stockPrice / trailingEps).toFixed(2));
     }
 
     /*
@@ -112,9 +118,33 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     } else if (pbRatio > 3) {
         color = "red";
     } 
+        return '<span style="color: ' + color + '">' + pbRatio + '</span>';
+    }
 
-    return '<span style="color: ' + color + '">' + pbRatio + '</span>';
-}
+    /*
+       Format percentage numbers
+    */
+    function percentCellRenderer(params) {
+        if (params.value == null) {
+            return null;
+        }
+        var value = params.value;
+
+        var eDivPercentBar = document.createElement('div');
+        eDivPercentBar.className = 'div-percent-bar';
+        eDivPercentBar.style.width = value + '%';
+
+        var eValue = document.createElement('div');
+        eValue.className = 'div-percent-value';
+        eValue.innerHTML = (value * 100).toFixed(1) + '%';
+
+        var eOuterDiv = document.createElement('div');
+        eOuterDiv.className = 'div-outer-div';
+        eOuterDiv.appendChild(eDivPercentBar);
+        eOuterDiv.appendChild(eValue);
+
+        return eOuterDiv;
+    }
 
     /*
         Highlights cells based on PE Ratio
@@ -124,14 +154,14 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         var peRatio = peRatioCalculation(params);
 
         if (peRatio == null) {
-            return String.Empty;
+            return null;
         }
 
-        if (peRatio < 10) {
+        if (peRatio > 0 && peRatio < 10) {
             color = "green";
         } else if (peRatio >= 10 && peRatio <= 20) {
             color = "orange"; 
-        } else if (peRatio > 20) {
+        } else {
             color = "red";
         } 
 
