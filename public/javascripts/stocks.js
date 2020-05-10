@@ -36,14 +36,16 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
             children: [
                 { headerName: "P/E Ratio", filter: 'agNumberColumnFilter', width: 150, valueGetter: peRatioCalculation, cellRenderer: peRatioCellRenderer}, 
                 { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
-                { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer}
+                { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
+                { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
+                { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}}
             ]
         },
         {
             headerName: 'Statistics',
             children: [
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Date", field: "_id", width: 200, filter: 'agDateColumnFilter', valueFormatter: mongoObjectIdDateFormatter},
+                { headerName: "Date", field: "_id", width: 200, filter: 'agDateColumnFilter', valueFormatter: mongoObjectIdDateFormatter}, //TODO: filter not working
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Asset Type", field: "quoteType.quoteType", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Price", field: "financialData.currentPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
@@ -124,11 +126,16 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     /*
        Format percentage numbers
     */
-    function percentCellRenderer(params) {
+   function percentCellRenderer(params) {
         if (params.value == null) {
             return null;
         }
+
         var value = params.value;
+
+        if (params.conversionRequired) {
+            value = value * 100;
+        }
 
         var eDivPercentBar = document.createElement('div');
         eDivPercentBar.className = 'div-percent-bar';
@@ -136,7 +143,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
 
         var eValue = document.createElement('div');
         eValue.className = 'div-percent-value';
-        eValue.innerHTML = (value * 100).toFixed(1) + '%';
+        eValue.innerHTML = value.toFixed(2) + '%';
 
         var eOuterDiv = document.createElement('div');
         eOuterDiv.className = 'div-outer-div';

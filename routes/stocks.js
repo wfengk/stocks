@@ -29,9 +29,13 @@ router.post('/', jsonParser, function(req, res, next) {
   const client = new MongoClient(uri, { useNewUrlParser: true, newUnifiedTopology: true });
   client.connect(err => {
 
+    // Clean periods in keys (MongoDB limitation)
+    var json = req.body;
+    modifyKeys(json);
+
     const collection = client.db("stocks").collection("stocks");
 
-    collection.insertOne(req.body, function(err,res) {
+    collection.insertOne(json, function(err,res) {
       if (err) {
         throw err;
       }
@@ -45,3 +49,16 @@ router.post('/', jsonParser, function(req, res, next) {
 });
 
 module.exports = router;
+
+function modifyKeys(obj){
+  Object.keys(obj).forEach(key => {
+      if (key.includes(".")) {
+        var newKey = key.replace(".","_");
+        obj[newKey] = obj[key];
+        delete obj[key];
+      }
+      if (typeof obj[key] === "object" && obj[key] != null){
+          modifyKeys(obj[key]);
+      }
+  });
+}
