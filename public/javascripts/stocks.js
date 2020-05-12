@@ -1,3 +1,5 @@
+import { ObjectID } from "mongodb";
+
 var app = angular.module('stocksApp', ["agGrid"]);
 
 agGrid.initialiseAgGridWithAngular1(angular);
@@ -44,8 +46,9 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         {
             headerName: 'Statistics',
             children: [
+                { headerName: "Exchange", field: "quoteType.exchange", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Date", field: "_id", width: 200, filter: 'agDateColumnFilter', valueFormatter: mongoObjectIdDateFormatter}, //TODO: filter not working
+                { headerName: "Date", field: "date", width: 200, filter: 'agDateColumnFilter', valueGetter: mongoObjectIdDateConverter, valueFormatter: mongoObjectIdDateFormatter},
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Asset Type", field: "quoteType.quoteType", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Price", field: "financialData.currentPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
@@ -81,8 +84,16 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     /*
         Convert MongoDB ObjectId to Date value
     */
+    function mongoObjectIdDateConverter(params) {
+        var dateTime = new Date(parseInt(params.data._id.slice(0,8), 16)*1000);
+        return new Date(dateTime.getFullYear(),dateTime.getMonth(), dateTime.getDay());
+    }
+
+    /*
+        Format date field for display
+    */
     function mongoObjectIdDateFormatter(params) {
-        return new Date(parseInt(params.value.slice(0,8), 16)*1000);
+        return params.value.toLocaleDateString();
     }
 
     /*
