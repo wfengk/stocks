@@ -1,15 +1,14 @@
-import { ObjectID } from "mongodb";
-
-var app = angular.module('stocksApp', ["agGrid"]);
+var app = angular.module('stocksApp', ["agGrid",'ngMaterial', 'ngMessages']);
 
 agGrid.initialiseAgGridWithAngular1(angular);
 
 app.factory('stocks', ['$http',function($http){
 
-  var getStocks = function() {
+  var getStocks = function(dateFilter) {
     return $http({
       method: 'GET',
-      url: 'api/stocks'
+      url: 'api/stocks',
+      params: { "date" : dateFilter }
     })
   };
 
@@ -31,6 +30,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
             children: [
                 { headerName: "Symbol", field: "symbol", width: 150, pinned: true },
                 { headerName: "Company", field: "price.longName", width: 400, pinned: true },
+                { headerName: "Price", field: "financialData.currentPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
             ]
         },
         {
@@ -40,7 +40,9 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
                 { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
-                { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}}
+                { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}},
+                { headerName: "Graham Number", field: "grahamNumber", filter: 'agNumberColumnFilter', valueGetter: gramhamNumberCalculation},
+                { headerName: "Debt to Equity", field: "financialData.debtToEquity.raw", filter: 'agNumberColumnFilter'}
             ]
         },
         {
@@ -51,12 +53,20 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "Date", field: "date", width: 200, filter: 'agDateColumnFilter', valueGetter: mongoObjectIdDateConverter, valueFormatter: mongoObjectIdDateFormatter},
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Asset Type", field: "quoteType.quoteType", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Price", field: "financialData.currentPrice.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: boldCellRenderer},
                 { headerName: "Trailing EPS", field: "defaultKeyStatistics.trailingEps.raw", filter: 'agNumberColumnFilter', width: 150},
                 { headerName: "Forward EPS", field: "defaultKeyStatistics.forwardEps.raw", filter: 'agNumberColumnFilter', width: 150}
             ]
         }
     ];
+
+    $scope.updateResults = function() {
+        alert($scope.chosenDate);
+
+        stocks.getStocks($scope.chosenDate).then(function(response) {
+            console.log("Done querying for data");
+            $scope.gridOptions.api.setRowData(response.data);
+        });
+    };
 
     /*
         Data grid configuration
@@ -76,7 +86,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     /*
         Query MongoDB for data then load the data grid
     */
-    stocks.getStocks().then(function(response) {
+    stocks.getStocks(new Date()).then(function(response) {
         console.log("Done querying for data");
         $scope.gridOptions.api.setRowData(response.data);
     });
@@ -94,6 +104,20 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     */
     function mongoObjectIdDateFormatter(params) {
         return params.value.toLocaleDateString();
+    }
+
+    /*
+        Calculate Graham number for a stock
+    */
+    function gramhamNumberCalculation(params) {
+
+        if (!("defaultKeyStatistics" in params.data)) {
+            return null;
+        }
+        if (!("bookValue" in params.data.defaultKeyStatistics) || !("trailingEps" in params.data.defaultKeyStatistics)) {
+            return null
+        }
+        return Math.sqrt(15 * 1.5 * Number(params.data.defaultKeyStatistics.bookValue.raw) * Number(params.data.defaultKeyStatistics.trailingEps.raw)).toFixed(2);
     }
 
     /*

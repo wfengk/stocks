@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var bodyParser = require('body-parser');
+var ObjectId = require('mongoose').Types.ObjectId; 
 
 // Create application/json parser
 var jsonParser = bodyParser.json({extended: true});
@@ -10,7 +11,11 @@ router.get('/', function(req, res, next) {
   
   const Stocks = require('../models/stock');
 
-  Stocks.find({})
+  var date = new Date((new Date(req.query.date)).toDateString());
+  var dateFilterStart = getObjectIdFromDate(date);
+  var dateFilterEnd = getObjectIdFromDate(new Date(date.setDate(date.getDate()+1)));
+
+  Stocks.find({ $and: [ { _id : { $gt : new ObjectId(dateFilterStart) }}, { _id : { $lt : new ObjectId(dateFilterEnd)}}]})
   .then(function(stocks){
     console.log("Data returned from retrieving stocks");
     res.json(stocks);
@@ -62,3 +67,7 @@ function modifyKeys(obj){
       }
   });
 }
+
+var getObjectIdFromDate = function (date) {
+	return Math.floor(date.getTime() / 1000).toString(16) + "0000000000000000";
+};
