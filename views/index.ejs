@@ -17,11 +17,10 @@
         <div class="col-md-10 col-md-offset-1">
           
           <div class="page-header">
-            <h1><img src="/images/monkey.png"> Stocks</h1>
+              <h1><img src="/images/monkey.png"> Stocks</h1>
+              <md-datepicker ng-change="updateResults()" ng-model="chosenDate" md-placeholder="Enter date"></md-datepicker>
           </div>
-
-          <md-datepicker ng-change="updateResults()" ng-model="chosenDate" md-placeholder="Enter date"></md-datepicker>
-          
+     
           <div ag-grid="gridOptions" class="ag-theme-material" style="height: 100%;"></div>
 
         </div>

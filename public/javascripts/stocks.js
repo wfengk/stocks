@@ -41,13 +41,14 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}},
-                { headerName: "Graham Number", field: "grahamNumber", filter: 'agNumberColumnFilter', valueGetter: gramhamNumberCalculation},
+                { headerName: "Graham Number", field: "grahamNumber", filter: 'agNumberColumnFilter', valueGetter: gramhamNumberCalculation, cellRenderer: grahamNumberCellRenderer},
                 { headerName: "Debt to Equity", field: "financialData.debtToEquity.raw", filter: 'agNumberColumnFilter'}
             ]
         },
         {
             headerName: 'Statistics',
             children: [
+                { headerName: "Daily Change" , field: "price.regularMarketChangePercent.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Exchange", field: "quoteType.exchange", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Date", field: "date", width: 200, filter: 'agDateColumnFilter', valueGetter: mongoObjectIdDateConverter, valueFormatter: mongoObjectIdDateFormatter},
@@ -60,8 +61,6 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     ];
 
     $scope.updateResults = function() {
-        alert($scope.chosenDate);
-
         stocks.getStocks($scope.chosenDate).then(function(response) {
             console.log("Done querying for data");
             $scope.gridOptions.api.setRowData(response.data);
@@ -156,6 +155,26 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         color = "red";
     } 
         return '<span style="color: ' + color + '">' + pbRatio + '</span>';
+    }
+
+    /*
+        Highlights cells based on Graham Number
+    */
+   function grahamNumberCellRenderer (params) {
+
+        if (params.value == null) {
+            return String.Empty;
+        }
+              
+        var isUnderPriced = Number(params.value) > (params.data.financialData.currentPrice.raw);
+
+        if (isUnderPriced) {
+            color = "green";
+        } else {
+            color = "red";
+        } 
+
+        return '<span style="color: ' + color + '">' + params.value + '</span>';
     }
 
     /*
