@@ -51,7 +51,6 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "Daily Change" , field: "price.regularMarketChangePercent.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Exchange", field: "quoteType.exchange", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
-                { headerName: "Date", field: "date", width: 200, filter: 'agDateColumnFilter', valueGetter: mongoObjectIdDateConverter, valueFormatter: mongoObjectIdDateFormatter},
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Asset Type", field: "quoteType.quoteType", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Trailing EPS", field: "defaultKeyStatistics.trailingEps.raw", filter: 'agNumberColumnFilter', width: 150},
@@ -60,12 +59,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         }
     ];
 
-    $scope.updateResults = function() {
-        stocks.getStocks($scope.chosenDate).then(function(response) {
-            console.log("Done querying for data");
-            $scope.gridOptions.api.setRowData(response.data);
-        });
-    };
+    $scope.numResults = 0;
 
     /*
         Data grid configuration
@@ -86,24 +80,18 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         Query MongoDB for data then load the data grid
     */
     stocks.getStocks(new Date()).then(function(response) {
-        console.log("Done querying for data");
+        console.log("Done querying for data - initial load");
         $scope.gridOptions.api.setRowData(response.data);
+        $scope.numResults = response.data.length;
     });
 
-    /*
-        Convert MongoDB ObjectId to Date value
-    */
-    function mongoObjectIdDateConverter(params) {
-        var dateTime = new Date(parseInt(params.data._id.slice(0,8), 16)*1000);
-        return new Date(dateTime.getFullYear(),dateTime.getMonth(), dateTime.getDay());
-    }
-
-    /*
-        Format date field for display
-    */
-    function mongoObjectIdDateFormatter(params) {
-        return params.value.toLocaleDateString();
-    }
+    $scope.updateResults = function() {
+        stocks.getStocks($scope.chosenDate).then(function(response) {
+            console.log("Done querying for data - using specified date");
+            $scope.gridOptions.api.setRowData(response.data);
+            $scope.numResults = response.data.length;
+        });
+    };
 
     /*
         Calculate Graham number for a stock

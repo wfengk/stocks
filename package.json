@@ -9,6 +9,7 @@
     "ag-grid-community": "^23.0.2",
     "aws-sdk": "^2.691.0",
     "body-parser": "^1.19.0",
+    "connect-timeout": "^1.9.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",

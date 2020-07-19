@@ -4,13 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
+var timeout = require('connect-timeout')
 
 var envConfig = require('dotenv').config();
 
-var db = require('./models/db');
-var agGrid = require('ag-grid-community');
- 
 // Load route handlers
 var indexRouter = require('./routes/index');
 var getStocksRouter = require('./routes/stocks');
@@ -19,6 +16,14 @@ var app = express();
 
 // Set body-parser limit
 app.use(bodyParser({limit: '5mb'}));
+
+// Set timeout for querying data from AWS
+app.use(timeout('600s'));
+app.use(haltOnTimedout)
+
+function haltOnTimedout (req, res, next) {
+  if (!req.timedout) next()
+}
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));

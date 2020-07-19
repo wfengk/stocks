@@ -19,7 +19,8 @@
           <div class="page-header">
               <h1><img src="/images/monkey.png"> Stocks</h1>
               <md-datepicker ng-change="updateResults()" ng-model="chosenDate" md-placeholder="Enter date"></md-datepicker>
-          </div>
+              <h4>Number of results: {{numResults}}</h2>
+            </div>
      
           <div ag-grid="gridOptions" class="ag-theme-material" style="height: 100%;"></div>
 
