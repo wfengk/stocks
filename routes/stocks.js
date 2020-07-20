@@ -34,19 +34,35 @@ router.get('/', function(req, res, next) {
       }
     }
     
-    //docClient.scan(params,onScan);
-    docClient.query(params, function(err, data) {
-      if (err) {
-          console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-      } else {
-          console.log("Query succeeded.");
-          queriedData = queriedData.concat(data.Items);
-          res.json(queriedData);
-      }
-    });
-
+    console.log("Beginning query for data...");
+    docClient.query(params, onQuery);
   } catch (error) {
       console.error(error);
+  }
+
+  function onQuery(err, data) {
+    if (err) {
+        console.error("Unable to query the table. Error JSON:", JSON.stringify(err, null, 2));
+    } else {
+        console.log("Query succeeded.");
+        
+        if (data.Items.length > 0) {
+          queriedData = queriedData.concat(data.Items);
+          console.log("Queried " + queriedData.length + " items so far");
+        }
+  
+        // continue querying if we have more results
+        // query can retrieve a maximum of 1MB of data
+        if (typeof data.LastEvaluatedKey != "undefined") {
+            console.log("Querying for more...");
+            params.ExclusiveStartKey = data.LastEvaluatedKey;
+            docClient.query(params, onQuery);
+        } else 
+        {
+          console.log("Finished querying for data");
+          res.json(queriedData);
+        }
+    }
   }
 });
 
