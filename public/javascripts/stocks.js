@@ -40,12 +40,13 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
                 { headerName: "P/S Ratio", field: "summaryDetail.priceToSalesTrailing12Months.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer},
                 { headerName: "PEG Ratio", field: "defaultKeyStatistics.pegRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pegRatioCellRenderer},
-                { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
+                { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: returnOnEquityRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}},
                 { headerName: "Payout Ratio", field: "summaryDetail.payoutRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: true}},
                 { headerName: "Graham Number", field: "grahamNumber", filter: 'agNumberColumnFilter', valueGetter: gramhamNumberCalculation, cellRenderer: grahamNumberCellRenderer},
-                { headerName: "Debt to Equity", field: "financialData.debtToEquity.raw", filter: 'agNumberColumnFilter'}
+                { headerName: "Debt to Equity", field: "financialData.debtToEquity.raw", filter: 'agNumberColumnFilter'},
+                { headerName: "Current Ratio", field: "financialData.currentRatio.raw", filter: 'agNumberFilter', with: 150, cellRenderer: currentRatioRenderer}
             ]
         },
         {
@@ -117,6 +118,64 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     }
 
     /*
+        Current ratio - makes sure that the company is able to pay its short term obligations
+    */
+   function currentRatioRenderer(params) {
+
+        if (params.value == null) {
+            return String.Empty;
+        }      
+
+        if (params.value > 2) {
+            color = "green";
+        } else if (pbRatio >= 1 && pbRatio <= 2) {
+            color = "orange"; 
+        } else if (pbRatio < 1) {
+            color = "red";
+        } 
+        return '<span style="color: ' + color + '">' + pbRatio + '</span>';
+    }
+
+    /*
+        Return on Equity
+    */
+   function returnOnEquityRenderer(params) {
+        if (params.value == null) {
+            return null;
+        }
+
+        var value = params.value;
+
+        if (params.conversionRequired) {
+            value = value * 100;
+        }
+
+        var eDivPercentBar = document.createElement('div');
+        eDivPercentBar.className = 'div-percent-bar';
+        eDivPercentBar.style.width = value + '%';
+
+        var eValue = document.createElement('div');
+        eValue.className = 'div-percent-value';
+        eValue.innerHTML = value.toFixed(2) + '%';
+
+        if (value > 15) {
+            color = "green";
+        } else if (value >= 10 && value <= 15) {
+            color = "orange"; 
+        } else {
+            color = "red";
+        } 
+        eValue.style.color = color
+
+        var eOuterDiv = document.createElement('div');
+        eOuterDiv.className = 'div-outer-div';
+        eOuterDiv.appendChild(eDivPercentBar);
+        eOuterDiv.appendChild(eValue);
+
+        return eOuterDiv;
+    }
+
+    /*
         Calculate trailing PE
     */
     function peRatioCalculation(params) {
@@ -139,18 +198,18 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     */
    function pbRatioCellRenderer (params) {
 
-    if (params.value == null) {
-        return String.Empty;
-    }      
-    var pbRatio = (params.value).toFixed(2);
+        if (params.value == null) {
+            return String.Empty;
+        }      
+        var pbRatio = (params.value).toFixed(2);
 
-    if (pbRatio < 1) {
-        color = "green";
-    } else if (pbRatio >= 1 && pbRatio <= 3) {
-        color = "orange"; 
-    } else if (pbRatio > 3) {
-        color = "red";
-    } 
+        if (pbRatio < 1) {
+            color = "green";
+        } else if (pbRatio >= 1 && pbRatio <= 3) {
+            color = "orange"; 
+        } else if (pbRatio > 3) {
+            color = "red";
+        } 
         return '<span style="color: ' + color + '">' + pbRatio + '</span>';
     }
 
