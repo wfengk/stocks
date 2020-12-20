@@ -38,9 +38,12 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
             children: [
                 { headerName: "P/E Ratio", filter: 'agNumberColumnFilter', width: 150, valueGetter: peRatioCalculation, cellRenderer: peRatioCellRenderer}, 
                 { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
+                { headerName: "P/S Ratio", field: "summaryDetail.priceToSalesTrailing12Months.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer},
+                { headerName: "PEG Ratio", field: "defaultKeyStatistics.pegRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer},
                 { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}},
+                { headerName: "Payout Ratio", field: "summaryDetail.payoutRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: true}},
                 { headerName: "Graham Number", field: "grahamNumber", filter: 'agNumberColumnFilter', valueGetter: gramhamNumberCalculation, cellRenderer: grahamNumberCellRenderer},
                 { headerName: "Debt to Equity", field: "financialData.debtToEquity.raw", filter: 'agNumberColumnFilter'}
             ]
@@ -49,6 +52,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
             headerName: 'Statistics',
             children: [
                 { headerName: "Daily Change" , field: "price.regularMarketChangePercent.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
+                { headerName: "Beta", field: "defaultKeyStatistics.beta.raw", filter: 'agNumberColumnFilter', width: 150},
                 { headerName: "Exchange", field: "quoteType.exchange", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Industry", field: "summaryProfile.industry", filter: 'agTextColumnFilter', width: 150},
                 { headerName: "Market Cap", field: "price.marketCap.fmt", filter: 'agTextColumnFilter', width: 150},
@@ -59,6 +63,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         }
     ];
 
+    $scope.isLoading = false;
     $scope.numResults = 0;
 
     /*
@@ -77,19 +82,23 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
     };
 
     /*
-        Query MongoDB for data then load the data grid
+        Query for data then load the data grid
     */
     stocks.getStocks(new Date()).then(function(response) {
         console.log("Done querying for data - initial load");
+        $scope.isLoading = true;
         $scope.gridOptions.api.setRowData(response.data);
         $scope.numResults = response.data.length;
+        $scope.isLoading = false;
     });
 
     $scope.updateResults = function() {
+        $scope.isLoading = true;
         stocks.getStocks($scope.chosenDate).then(function(response) {
             console.log("Done querying for data - using specified date");
             $scope.gridOptions.api.setRowData(response.data);
             $scope.numResults = response.data.length;
+            $scope.isLoading = false;
         });
     };
 

@@ -57,7 +57,8 @@ router.get('/', function(req, res, next) {
             console.log("Querying for more...");
             params.ExclusiveStartKey = data.LastEvaluatedKey;
             docClient.query(params, onQuery);
-        } else 
+        } 
+        else 
         {
           console.log("Finished querying for data");
           res.json(queriedData);
@@ -69,6 +70,9 @@ router.get('/', function(req, res, next) {
 // Get stocks for notification
 router.get('/gettopmovers', function(req, res, next) {
   res.json("Here are the top moving stocks:");
+
+  
+
 });
 
 // Insert stock

@@ -13,20 +13,31 @@
   <style> .glyphicon-thumbs-up { cursor:pointer } </style>
 </head>
 <body ng-app="stocksApp" ng-controller="MainCtrl">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          
-          <div class="page-header">
-              <h1><img src="/images/monkey.png"> Stocks</h1>
-              <md-datepicker ng-change="updateResults()" ng-model="chosenDate" md-placeholder="Enter date"></md-datepicker>
-              <h4>Number of results: {{numResults}}</h2>
-            </div>
-     
-          <div ag-grid="gridOptions" class="ag-theme-material" style="height: 100%;"></div>
-
-        </div>
-      </div>   
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      <div class="page-header">
+        <h1><img src="/images/monkey.png"> Stocks</h1>
+        
+      </div>
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-1 col-md-offset-1">
+      <md-datepicker ng-change="updateResults()" ng-model="chosenDate" md-placeholder="Enter date"></md-datepicker>
+    </div>
+    <div class="col-md-1 col-md-offset-1">
+      <md-progress-circular md-mode="indeterminate" ng-disabled="!isLoading"></md-progress-circular>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      <h4>Number of results: {{numResults}}</h4>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      <div ag-grid="gridOptions" class="ag-theme-material" style="height: 100%;"/>
+    </div>
+  </div>  
 </body>
 </html>

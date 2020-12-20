@@ -6,8 +6,8 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "ag-grid-community": "^23.0.2",
-    "aws-sdk": "^2.691.0",
+    "ag-grid-community": "^23.2.1",
+    "aws-sdk": "^2.804.0",
     "body-parser": "^1.19.0",
     "connect-timeout": "^1.9.0",
     "cookie-parser": "~1.4.4",
@@ -16,15 +16,15 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
-    "mongodb": "^3.5.7",
-    "mongoose": "^5.9.10",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.11.4",
     "morgan": "~1.9.1"
   },
   "devDependencies": {
-    "angular": "^1.7.9",
-    "angular-animate": "^1.7.9",
-    "angular-aria": "^1.7.9",
-    "angular-material": "^1.1.22",
-    "angular-messages": "^1.7.9"
+    "angular": "^1.8.2",
+    "angular-animate": "^1.8.2",
+    "angular-aria": "^1.8.2",
+    "angular-material": "^1.2.1",
+    "angular-messages": "^1.8.2"
   }
 }
