@@ -39,7 +39,7 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
                 { headerName: "P/E Ratio", filter: 'agNumberColumnFilter', width: 150, valueGetter: peRatioCalculation, cellRenderer: peRatioCellRenderer}, 
                 { headerName: "P/B Ratio", field: "defaultKeyStatistics.priceToBook.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer}, 
                 { headerName: "P/S Ratio", field: "summaryDetail.priceToSalesTrailing12Months.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer},
-                { headerName: "PEG Ratio", field: "defaultKeyStatistics.pegRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pbRatioCellRenderer},
+                { headerName: "PEG Ratio", field: "defaultKeyStatistics.pegRatio.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: pegRatioCellRenderer},
                 { headerName: "Return on Equity", field: "financialData.returnOnEquity.raw", filter: 'agNumberColumnFilter', width: 200, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield", field: "summaryDetail.dividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams: {conversionRequired: true}},
                 { headerName: "Yield (5 Yr Avg)", field: "summaryDetail.fiveYearAvgDividendYield.raw", filter: 'agNumberColumnFilter', width: 150, cellRenderer: percentCellRenderer, cellRendererParams:{conversionRequired: false}},
@@ -152,6 +152,28 @@ app.controller('MainCtrl', ['$scope', 'stocks', function($scope, stocks){
         color = "red";
     } 
         return '<span style="color: ' + color + '">' + pbRatio + '</span>';
+    }
+
+    /*
+        Highlights cells based on PEG Ratio
+    */
+   function pegRatioCellRenderer (params) {
+
+        if (params.value == null) {
+            return String.Empty;
+        }
+
+        var peRatio = peRatioCalculation(params);
+        var pegRatio = (params.value).toFixed(2);
+
+        if (pegRatio < 1 && pegRatio > 0) {
+            color = "green";
+        } else if (pegRatio >= 1 && pegRatio <= 3) {
+            color = "orange"; 
+        } else if (pegRatio > 3 || peRatio < 0 || params.data.financialData.earningsGrowth < 0) {
+            color = "red";
+        } 
+        return '<span style="color: ' + color + '">' + pegRatio + '</span>';
     }
 
     /*
